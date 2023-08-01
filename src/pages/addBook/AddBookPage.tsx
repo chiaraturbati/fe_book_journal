@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { addBook } from "../../api/books";
 
 export interface BookData {
   title: string;
@@ -16,6 +17,7 @@ export function AddBookPage() {
 
   const navigate = useNavigate();
   const [addedBook, setAddedBook] = useState<BookData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -31,16 +33,22 @@ export function AddBookPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setAddedBook(bookData);
-    navigate(
-      `/book-year-list?title=${encodeURIComponent(
-        bookData.title
-      )}&author=${encodeURIComponent(
-        bookData.author
-      )}&year=${encodeURIComponent(bookData.year)}`
-    );
+    try {
+      const addedBookData = await addBook(bookData);
+      setAddedBook(addedBookData);
+      navigate(
+        `/book-year-list?title=${encodeURIComponent(
+          addedBookData.title
+        )}&author=${encodeURIComponent(
+          addedBookData.author
+        )}&year=${encodeURIComponent(addedBookData.year)}`
+      );
+    } catch (error) {
+      setError((error as any).message);
+      console.error((error as any).message);
+    }
   };
 
   const yearsOptions = ["2022", "2023", "2024"]; // Opzioni degli anni disponibili
@@ -119,6 +127,12 @@ export function AddBookPage() {
           </button>
         </div>
       </form>
+      {error && (
+        <div className="text-red-500 mt-4">
+          <p>Si è verificato un errore:</p>
+          <p>{error}</p>
+        </div>
+      )}
     </div>
   );
 }
