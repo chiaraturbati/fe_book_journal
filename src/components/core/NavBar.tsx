@@ -1,16 +1,35 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { getBooks } from "../../api/books";
+import { BookData } from "../../pages/addBook/AddBookPage";
 
-const isActive = (obj) =>
-  obj.isActive ? "text-lg text-sky-400 font-semibold" : "text-lg text-white";
+// const isActive = (obj: boolean) =>
+//   obj.isActive ? "text-lg text-sky-400 font-semibold" : "text-lg text-white";
 
 export function NavBar() {
   const [selectedYear, setSelectedYear] = useState("Book Year List");
   const navigate = useNavigate();
+  const [years, setYears] = useState([]);
 
   const handleYearChange = (year: string) => {
     setSelectedYear(year);
   };
+
+  const fetchBooks = async () => {
+    try {
+      const response = await getBooks();
+      // da books prendi .year di ogni libro e mettilo in un array di anni (senza ripetizioni)
+      const years = response.map((book: BookData) => book.year);
+      const uniqueYears = [...new Set(years)];
+      setYears(uniqueYears as any);
+    } catch (error) {
+      console.error("Failed to fetch books:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchBooks();
+  }, []);
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-gray-900 shadow z-10">
@@ -61,27 +80,15 @@ export function NavBar() {
                   id="dropdown-menu"
                   className="hidden absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg"
                 >
-                  <NavLink
-                    to={`/book-year-list/2022`}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => handleYearChange("2022")}
-                  >
-                    2022
-                  </NavLink>
-                  <NavLink
-                    to="/book-year-list/2023"
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => handleYearChange("2023")}
-                  >
-                    2023
-                  </NavLink>
-                  <NavLink
-                    to="/book-year-list/2021"
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => handleYearChange("2021")}
-                  >
-                    2021
-                  </NavLink>
+                  {years.map((year) => (
+                    <NavLink
+                      to={`/book-year-list/${year}`}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => handleYearChange(year)}
+                    >
+                      {year}
+                    </NavLink>
+                  ))}
                 </div>
               </div>
             </div>
