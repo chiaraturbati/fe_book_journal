@@ -4,7 +4,7 @@ const BASE_URL = "http://127.0.0.1:3000/"; // Cambia questo URL se il tuo server
 
 export const getBooks = async () => {
   try {
-    const response = await axios.get(BASE_URL);
+    const response = await axios.get(BASE_URL + "books");
     return response.data;
   } catch (error) {
     throw new Error("Failed to fetch books.");
